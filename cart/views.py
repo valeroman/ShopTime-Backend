@@ -315,10 +315,6 @@ class SynchCartView(APIView):
                         updated_count = cart_item_count + int(count)
                         CartItem.objects.filter(cart=cart, product=product).update(count=updated_count)
 
-                        if CartItem.objects.filter(cart=cart, product=product).exists():
-                            # Updating the total number of the items in the cart
-                            total_items = int(cart.total_items) + 1
-                            Cart.objects.filter(user=user).update(total_items=total_items)
                 else:
                     # Adding of the cart item to user's cart
                     try:
@@ -328,6 +324,11 @@ class SynchCartView(APIView):
 
                     if cart_item_count <= quantity:
                         CartItem.objects.create(product=product, cart=cart, count=cart_item_count)
+                    
+                        if CartItem.objects.filter(cart=cart, product=product).exists():
+                            # Updating the total number of the items in the cart
+                            total_items = int(cart.total_items) + 1
+                            Cart.objects.filter(user=user).update(total_items=total_items)
             
             return Response({'success': 'Cart Synchronized'}, status=status.HTTP_201_CREATED)
 
