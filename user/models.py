@@ -1,3 +1,4 @@
+import cart
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.db import models
@@ -14,6 +15,9 @@ class UserAccountManager(BaseUserManager):
 
         user.set_password(password)
         user.save()
+
+        shopping_cart = cart.models.Cart(user=user)
+        shopping_cart.save()
 
         return user
 
