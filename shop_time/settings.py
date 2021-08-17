@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'cart',
     'shipping',
     'orders',
+    'payment',
 ]
 
 MIDDLEWARE = [
@@ -200,6 +201,12 @@ DJOSER = {
         'user_delete': 'djoser.serializers.UserDeleteSerializer',
     }
 }
+
+BT_ENVIRONMENT = 'sandbox'
+BT_MERCHANT_ID = 'y4pkfwb749ywhhdb'
+BT_PUBLIC_KEY = 'f2wbj5vzxn8mgr9b'
+BT_PRIVATE_KEY = 'a06e99da221424b5f3196c59d9271874'
+
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '321816746725-hj9a4a1kjkeqi6ldtdpgh0ft0bdlpjkt.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'lGeUpo3fIaGeycvxaQnDXLHm'
