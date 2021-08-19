@@ -1,5 +1,6 @@
 import braintree
 from cart.models import Cart, CartItem
+from coupons.models import FixedPriceCoupon, PercentageCoupon
 from django.conf import settings
 from django.core.mail import send_mail
 from orders.models import Order, OrderItem
@@ -35,6 +36,9 @@ class GetPaymentTotalView(APIView):
         shipping_id = request.query_params.get('shipping_id')
         shipping_id = str(shipping_id)
 
+        coupon_name = request.query_params.get('coupon_name')
+        coupon_name = str(coupon_name)
+
         try:
             cart = Cart.objects.get(user=user)
 
@@ -63,7 +67,30 @@ class GetPaymentTotalView(APIView):
             total_compare_amount = round(total_compare_amount, 2)
             original_price = round(total_amount, 2)
 
-            # COUPONS
+            total_after_coupon = total_amount
+
+            # Coupon Check
+            if coupon_name != '':
+                # Check whether we have a valid fixed price coupon
+                if FixedPriceCoupon.objects.filter(name__iexact=coupon_name).exists():
+                    fixed_price_coupon = FixedPriceCoupon.objects.get(name=coupon_name)
+                    discount_amount = float(fixed_price_coupon.discount_price)
+
+                    if discount_amount < total_amount:
+                        total_amount -= discount_amount
+                        total_after_coupon = total_amount
+                
+                # Check whether we have a valid percentage price coupon
+                elif PercentageCoupon.objects.filter(name__iexact=coupon_name).exists():
+                    percentage_coupon = PercentageCoupon.objects.get(name=coupon_name)
+                    discount_percentage = float(percentage_coupon.discount_percentage)
+
+                    if discount_percentage > 1 and discount_percentage < 100:
+                        total_amount -= (total_amount * (discount_percentage / 100))
+                        total_after_coupon = total_amount
+
+            # Total After Coupon Applied
+            total_after_coupon = round(total_amount, 2)
 
             # Estimated Tax Cost
             estimated_tax = round(total_amount * tax, 2)
@@ -85,6 +112,7 @@ class GetPaymentTotalView(APIView):
 
             return Response({
                 'original_price': f'{original_price:.2f}',
+                'total_after_coupon': f'{total_after_coupon:.2f}',
                 'total_amount': f'{total_amount:.2f}',
                 'total_compare_amount': f'{total_compare_amount:.2f}',
                 'estimated_tax': f'{estimated_tax:.2f}',
@@ -104,8 +132,8 @@ class ProcessPaymentView(APIView):
 
         nonce = data['nonce']
         shipping_id = str(data['shipping_id'])
+        coupon_name = str(data['coupon_name'])
 
-        # COUPON NAME
         full_name = data['full_name']
         address_line_1 = data['address_line_1']
         address_line_2 = data['address_line_2']
@@ -141,7 +169,26 @@ class ProcessPaymentView(APIView):
         for cart_item in cart_items:
             total_amount += (float(cart_item.product.price) * float(cart_item.count))
         
-        # COUPONS
+        # Coupon Check
+        if coupon_name != '':
+            # Check whether we have a valid fixed price coupon
+            if FixedPriceCoupon.objects.filter(name__iexact=coupon_name).exists():
+                fixed_price_coupon = FixedPriceCoupon.objects.get(name=coupon_name)
+                discount_amount = float(fixed_price_coupon.discount_price)
+
+                if discount_amount < total_amount:
+                    total_amount -= discount_amount
+            
+            # Check whether we have a valid percentage price coupon
+            elif PercentageCoupon.objects.filter(name__iexact=coupon_name).exists():
+                percentage_coupon = PercentageCoupon.objects.get(name=coupon_name)
+                discount_percentage = float(percentage_coupon.discount_percentage)
+
+                if discount_percentage > 1 and discount_percentage < 100:
+                    total_amount -= (total_amount * (discount_percentage / 100))
+
+        # Total After Coupon Applied
+        total_after_coupon = round(total_amount, 2)
 
         # Add tax total (can add tax after shipping if e-commerce store is applying tax in that way)
         total_amount += (total_amount * tax)

@@ -30,10 +30,7 @@ class GetItemsView(APIView):
                     
                     result.append(item)
 
-            if len(result) != 0:
-                return Response({ 'cart': result }, status=status.HTTP_200_OK)
-            return Response({'cart': result}, status=status.HTTP_404_NOT_FOUND)
-
+            return Response({ 'cart': result }, status=status.HTTP_200_OK)
         except:
             return Response({'error': 'Something went wrong when retrieving cart items'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
