@@ -3,6 +3,7 @@ from product.serializers import ProductSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from wishlist.models import WishList, WishListItem
 
 from .models import Cart, CartItem
 
@@ -65,6 +66,24 @@ class AddItemView(APIView):
                     # Update the total number of items in the cart
                     total_items = int(cart.total_items) + 1
                     Cart.objects.filter(user=user).update(total_items=total_items)
+
+                    # Remove Item from WishList
+                    wishlist = WishList.objects.get(user=user)
+
+                    # Does this item exist in the wishlist
+                    if WishListItem.objects.filter(wishlist=wishlist).exists():
+                        # Delete the wishlist item
+                        WishListItem.objects.filter(
+                            wishlist=wishlist,
+                            product=product
+                        ).delete()
+
+                        if not WishListItem.objects.filter(wishlist=wishlist).exists():
+                            # Update total_items in wishlist
+                            total_items = int(wishlist.total_items) - 1
+                            WishList.objects.filter(user=user).update(
+                                total_items=total_items
+                            )
 
                 cart_items = CartItem.objects.order_by('product').filter(cart=cart)
  
@@ -311,7 +330,6 @@ class SynchCartView(APIView):
                     if (cart_item_count + int(count)) <= int(quantity):
                         updated_count = cart_item_count + int(count)
                         CartItem.objects.filter(cart=cart, product=product).update(count=updated_count)
-
                 else:
                     # Adding of the cart item to user's cart
                     try:
@@ -326,6 +344,20 @@ class SynchCartView(APIView):
                             # Updating the total number of the items in the cart
                             total_items = int(cart.total_items) + 1
                             Cart.objects.filter(user=user).update(total_items=total_items)
+
+                            wishlist = WishList.objects.get(user=user)
+
+                            if WishListItem.objects.filter(wishlist=wishlist, product=product).exists():
+                                WishListItem.objects.filter(
+                                    wishlist=wishlist,
+                                    product=product
+                                ).delete()
+
+                                if not WishListItem.objects.filter(wishlist=wishlist, product=product).exists():
+                                    total_items = int(wishlist.total_items) - 1
+                                    WishList.objects.filter(user=user).update(
+                                        total_items=total_items
+                                    )
             
             return Response({'success': 'Cart Synchronized'}, status=status.HTTP_201_CREATED)
 
