@@ -273,15 +273,42 @@ class ProcessPaymentView(APIView):
                     return Response({'error': 'Transaction succeeded and order created, but failed to created and order item'},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+            order_items = OrderItem.objects.filter(order=order)
+            order_item_text = '\n\nOrder Item Details:'
+            order_item_count = 1
+
+            for order_item in order_items:
+                order_item_text += '\n\nOrder Item ' + str(order_item_count) + ':'
+                order_item_text += '\nOrder Item Name: ' + str(order_item.name)
+                order_item_text += '\nOrder Item Price: ' + str(order_item.price)
+                order_item_text += '\nOrder Item Count: ' + str(order_item.count)
+                order_item_count += 1
+
             try:
                 send_mail(
                     'Your Order Details',
-                    'Hey ' + full_name + ','
+                    'Hi ' + full_name + ','
                     + '\n\nWe recieved your order!'
                     + '\n\nGive us some time to process your order and ship it out to you '
                     + '\n\nYou can go on your user dashboard to check the status of your order.'
+                    + '\n\nHere are the ddetails of your order:'
+                    + '\nOrder Transaction ID: ' + str(newTransaction.transaction.id)
+                    + '\nOrder Total: $' + str(total_amount)
+                    + '\nCoupon Used: ' + str(coupon_name)
+                    + '\n\nShipping Details:'
+                    + '\nAddress Line 1: ' + address_line_1
+                    + '\nAddress Line_2: ' + address_line_2
+                    + '\nCity: ' + city
+                    + '\nState/Province/Region: ' + state_province_region
+                    + '\nPostal/Zipcode: ' + postal_zip_code
+                    + '\nCountry/Region: ' + country_region
+                    + '\n\nPhone Number: ' + telephone_number
+                    + '\n\nShipping Option Details:'
+                    + '\nShipping Name: ' + shipping_name
+                    + '\nShipping Price: $' + str(shipping_price)
+                    + order_item_text
                     + '\n\nSincerely'
-                    + '\n\nShop Time',
+                    + '\nShop Time',
                     'valeroman@gmail.com',
                     [user.email],
                     fail_silently=False
@@ -290,6 +317,36 @@ class ProcessPaymentView(APIView):
             except:
                 return Response({'error': 'Transaction succeeded and order created, but failed to send email'},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            try:
+                send_mail(
+                    'An Order Was Created',
+                    'Hi, you are receiving this notification because an order was made on your website.'
+                    + '\n\nOrder Details of the user that made the order are the following:'
+                    + '\n\nFull Name: ' + full_name
+                    + '\nEmail: ' + user.email
+                    + '\nOrder Transaction ID: ' + str(newTransaction.transaction.id)
+                    + '\nOrder Total: $' + str(total_amount)
+                    + '\nCoupon Used: ' + str(coupon_name)
+                    + '\n\nShipping Details:'
+                    + '\nAddress Line 1: ' + address_line_1
+                    + '\nAddress Line_2: ' + address_line_2
+                    + '\nCity: ' + city
+                    + '\nState/Province/Region: ' + state_province_region
+                    + '\nPostal/Zipcode: ' + postal_zip_code
+                    + '\nCountry/Region: ' + country_region
+                    + '\n\nPhone Number: ' + telephone_number
+                    + '\n\nShipping Option Details:'
+                    + '\nShipping Name: ' + shipping_name
+                    + '\nShipping Price: $' + str(shipping_price)
+                    + order_item_text,
+                    'valeroman@gmail.com',
+                    ['valeroman@gmail.com'],
+                    fail_silently=False
+                )
+
+            except:
+                pass
 
             try:
                 # Empty the cart
