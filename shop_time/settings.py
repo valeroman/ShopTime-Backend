@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'user_profile',
     'wishlist',
     'reviews',
+    'stripe_payments',
 ]
 
 MIDDLEWARE = [
@@ -210,6 +211,9 @@ BT_ENVIRONMENT = 'sandbox'
 BT_MERCHANT_ID = 'y4pkfwb749ywhhdb'
 BT_PUBLIC_KEY = 'f2wbj5vzxn8mgr9b'
 BT_PRIVATE_KEY = 'a06e99da221424b5f3196c59d9271874'
+
+STRIPE_PUBLIC_KEY = 'pk_test_51HROZ3CxIJjWTJaz3UEcYQ90nw6ONejWWCJbEAVSbKRDtLyYlnzvOoiLN8GBifAHioKxrgQvAzHYb9qv6gfLXUD300a4gz4RBa'
+STRIPE_SECRET_KEY = 'sk_test_51HROZ3CxIJjWTJaz2uDYV5Su9hTfFCXGemherAZjC3EaU88fsqsAq5OjSsEi1j9PneWbCP0XQrJHBITWUuP4uwog00BJuNE4YA'
 
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '321816746725-hj9a4a1kjkeqi6ldtdpgh0ft0bdlpjkt.apps.googleusercontent.com'

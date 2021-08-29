@@ -188,7 +188,7 @@ class ProcessPaymentView(APIView):
                     total_amount -= (total_amount * (discount_percentage / 100))
 
         # Total After Coupon Applied
-        total_after_coupon = round(total_amount, 2)
+        # total_after_coupon = round(total_amount, 2)
 
         # Add tax total (can add tax after shipping if e-commerce store is applying tax in that way)
         total_amount += (total_amount * tax)
